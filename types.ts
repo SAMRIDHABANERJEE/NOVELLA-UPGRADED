@@ -10,5 +10,6 @@ export interface Book {
   author: string;
   coverImage: string;
   synopsis: string;
+  sampleContent: string; // Added sampleContent field
   reviews: Review[];
 }

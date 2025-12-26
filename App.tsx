@@ -19,15 +19,39 @@ const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
 };
 
 // Header Component
-const Header: React.FC = () => (
+const Header: React.FC<{ activePage: string; onNavigate: (page: string) => void }> = ({ activePage, onNavigate }) => (
   <header className="bg-white shadow-sm sticky top-0 z-10">
     <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
       <div className="flex items-center space-x-8">
         <h1 className="text-3xl font-extrabold text-indigo-700 tracking-tight">Novella</h1>
         <ul className="hidden md:flex space-x-6">
-          <li><a href="#" className="text-gray-700 hover:text-indigo-600 font-medium transition-colors">Browse</a></li>
-          <li><a href="#" className="text-gray-700 hover:text-indigo-600 font-medium transition-colors">Charts</a></li>
-          <li><a href="#" className="text-gray-700 hover:text-indigo-600 font-medium transition-colors">Community</a></li>
+          <li>
+            <button
+              onClick={() => onNavigate('browse')}
+              className={`font-medium transition-colors ${activePage === 'browse' ? 'text-indigo-600' : 'text-gray-700 hover:text-indigo-600'}`}
+              aria-current={activePage === 'browse' ? 'page' : undefined}
+            >
+              Browse
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => onNavigate('charts')}
+              className={`font-medium transition-colors ${activePage === 'charts' ? 'text-indigo-600' : 'text-gray-700 hover:text-indigo-600'}`}
+              aria-current={activePage === 'charts' ? 'page' : undefined}
+            >
+              Charts
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => onNavigate('community')}
+              className={`font-medium transition-colors ${activePage === 'community' ? 'text-indigo-600' : 'text-gray-700 hover:text-indigo-600'}`}
+              aria-current={activePage === 'community' ? 'page' : undefined}
+            >
+              Community
+            </button>
+          </li>
         </ul>
       </div>
       <div className="flex items-center space-x-4">
@@ -85,7 +109,7 @@ const HeroSection: React.FC = () => {
 
 
 // Book Card component
-const BookCard: React.FC<{ book: Book }> = ({ book }) => {
+const BookCard: React.FC<{ book: Book; onReadSampleClick: (book: Book) => void }> = ({ book, onReadSampleClick }) => {
   const [isSynopsisExpanded, setIsSynopsisExpanded] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
 
@@ -106,7 +130,7 @@ const BookCard: React.FC<{ book: Book }> = ({ book }) => {
   const synopsisLimit = 40; // Approx number of words for truncation
 
   const handleReadSample = () => {
-    alert(`A sample of "${book.title}" would be displayed here!`);
+    onReadSampleClick(book);
   };
 
   return (
@@ -218,44 +242,139 @@ const BookCard: React.FC<{ book: Book }> = ({ book }) => {
   );
 };
 
+// Book Sample Modal Component
+const BookSampleModal: React.FC<{ book: Book; onClose: () => void }> = ({ book, onClose }) => {
+  if (!book) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sample-modal-title"
+      aria-describedby="sample-modal-description"
+    >
+      <div className="relative bg-white rounded-lg shadow-2xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] flex flex-col">
+        <h2 id="sample-modal-title" className="text-3xl font-bold text-gray-900 mb-2">{book.title}</h2>
+        <p className="text-lg text-gray-600 mb-4">by <span className="font-semibold">{book.author}</span></p>
+
+        <div id="sample-modal-description" className="flex-grow overflow-y-auto pr-2 text-gray-700 leading-relaxed custom-scrollbar text-justify">
+          <p className="whitespace-pre-wrap">{book.sampleContent}</p>
+        </div>
+
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition-colors shadow-md"
+            aria-label="Close book sample"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Placeholder components for navigation
+const BrowsePage: React.FC = () => (
+  <section className="container mx-auto py-8 px-4 md:px-6">
+    <h2 className="text-3xl font-extrabold text-gray-900 mb-6">Browse All Books</h2>
+    <p className="text-lg text-gray-700">This section will feature a comprehensive list of all available books, allowing users to filter and sort by various criteria like genre, publication date, and rating.</p>
+    <p className="mt-4 text-gray-600 italic">More content and filtering options coming soon!</p>
+  </section>
+);
+
+const ChartsPage: React.FC = () => (
+  <section className="container mx-auto py-8 px-4 md:px-6">
+    <h2 className="text-3xl font-extrabold text-gray-900 mb-6">Top Charts</h2>
+    <p className="text-lg text-gray-700">Discover the most popular books, highest-rated titles, and trending authors here. Charts will be updated regularly to reflect community favorites.</p>
+    <p className="mt-4 text-gray-600 italic">Dynamic charts and leaderboards are under construction!</p>
+  </section>
+);
+
+const CommunityPage: React.FC = () => (
+  <section className="container mx-auto py-8 px-4 md:px-6">
+    <h2 className="text-3xl font-extrabold text-gray-900 mb-6">Community Hub</h2>
+    <p className="text-lg text-gray-700">Engage with other book lovers! This section will include forums, discussion groups, and personalized recommendations based on your reading history.</p>
+    <p className="mt-4 text-gray-600 italic">Join the discussion! Community features are in active development.</p>
+  </section>
+);
+
+
 // Main App component
 const App: React.FC = () => {
+  const [selectedBookForSample, setSelectedBookForSample] = useState<Book | null>(null);
+  const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
+  const [activePage, setActivePage] = useState<string>('home'); // State for active page
+
+  const handleOpenSampleModal = (book: Book) => {
+    setSelectedBookForSample(book);
+    setIsSampleModalOpen(true);
+  };
+
+  const handleCloseSampleModal = () => {
+    setIsSampleModalOpen(false);
+    setSelectedBookForSample(null);
+  };
+
+  const renderPageContent = () => {
+    switch (activePage) {
+      case 'browse':
+        return <BrowsePage />;
+      case 'charts':
+        return <ChartsPage />;
+      case 'community':
+        return <CommunityPage />;
+      case 'home':
+      default:
+        return (
+          <>
+            <HeroSection />
+            <section aria-labelledby="trending-now-heading" className="mt-12">
+              <div className="flex justify-between items-center mb-6">
+                <h2 id="trending-now-heading" className="text-3xl font-extrabold text-gray-900">Trending Now</h2>
+                <div className="flex space-x-4">
+                  <select className="px-4 py-2 rounded-full border border-gray-300 bg-white text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-200" aria-label="Filter books by genre">
+                    <option>Filter By: All Genres</option>
+                    <option>Fantasy</option>
+                    <option>Sci-Fi</option>
+                    <option>Romance</option>
+                  </select>
+                  <select className="px-4 py-2 rounded-full border border-gray-300 bg-white text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-200" aria-label="Sort books by criteria">
+                    <option>Sort By: Highest Rated</option>
+                    <option>Newest</option>
+                    <option>Most Reviewed</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid gap-8">
+                {BOOKS.map((book) => (
+                  <BookCard key={book.id} book={book} onReadSampleClick={handleOpenSampleModal} />
+                ))}
+              </div>
+            </section>
+          </>
+        );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header activePage={activePage} onNavigate={(page) => setActivePage(page)} />
 
       <main className="container mx-auto py-8 px-4 md:px-6">
-        <HeroSection />
-
-        <section aria-labelledby="trending-now-heading" className="mt-12">
-          <div className="flex justify-between items-center mb-6">
-            <h2 id="trending-now-heading" className="text-3xl font-extrabold text-gray-900">Trending Now</h2>
-            <div className="flex space-x-4">
-              <select className="px-4 py-2 rounded-full border border-gray-300 bg-white text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-200" aria-label="Filter books by genre">
-                <option>Filter By: All Genres</option>
-                <option>Fantasy</option>
-                <option>Sci-Fi</option>
-                <option>Romance</option>
-              </select>
-              <select className="px-4 py-2 rounded-full border border-gray-300 bg-white text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-200" aria-label="Sort books by criteria">
-                <option>Sort By: Highest Rated</option>
-                <option>Newest</option>
-                <option>Most Reviewed</option>
-              </select>
-            </div>
-          </div>
-          <div className="grid gap-8">
-            {BOOKS.map((book) => (
-              <BookCard key={book.id} book={book} />
-            ))}
-          </div>
-        </section>
+        {renderPageContent()}
       </main>
 
       <footer className="text-center py-8 text-gray-600 text-sm border-t border-gray-200 mt-16 bg-white">
         <p>&copy; {new Date().getFullYear()} Novella. All rights reserved.</p>
         <p className="mt-1">Designed with <span className="text-red-500" aria-hidden="true">&hearts;</span> by a world-class frontend engineer.</p>
       </footer>
+
+      {isSampleModalOpen && selectedBookForSample && (
+        <BookSampleModal book={selectedBookForSample} onClose={handleCloseSampleModal} />
+      )}
     </div>
   );
 };
