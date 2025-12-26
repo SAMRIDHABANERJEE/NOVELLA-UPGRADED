@@ -105,6 +105,10 @@ const BookCard: React.FC<{ book: Book }> = ({ book }) => {
 
   const synopsisLimit = 40; // Approx number of words for truncation
 
+  const handleReadSample = () => {
+    alert(`A sample of "${book.title}" would be displayed here!`);
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-xl overflow-hidden flex flex-col lg:flex-row max-w-5xl mx-auto my-8 border border-gray-100 transition-transform duration-300 hover:scale-[1.005] transform-gpu">
       {/* Book Cover */}
@@ -167,7 +171,11 @@ const BookCard: React.FC<{ book: Book }> = ({ book }) => {
         {/* CTAs and Reviews Toggle */}
         <div className="flex flex-col sm:flex-row justify-between items-center mt-4 pt-4 border-t border-gray-100 gap-3">
           <div className="flex gap-3">
-            <button className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition-colors shadow-md" aria-label={`Read sample of ${book.title}`}>
+            <button
+              onClick={handleReadSample}
+              className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition-colors shadow-md"
+              aria-label={`Read sample of ${book.title}`}
+            >
               Read Sample
             </button>
             {book.reviews.length > 0 && (
