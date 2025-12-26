@@ -19,7 +19,12 @@ const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
 };
 
 // Header Component
-const Header: React.FC<{ activePage: string; onNavigate: (page: string) => void }> = ({ activePage, onNavigate }) => (
+const Header: React.FC<{
+  activePage: string;
+  onNavigate: (page: string) => void;
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+}> = ({ activePage, onNavigate, searchTerm, onSearchChange }) => (
   <header className="bg-white shadow-sm sticky top-0 z-10">
     <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
       <div className="flex items-center space-x-8">
@@ -61,6 +66,8 @@ const Header: React.FC<{ activePage: string; onNavigate: (page: string) => void 
             placeholder="Search Books & Authors..."
             className="pl-10 pr-4 py-2 rounded-full bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 text-sm w-48 transition-all duration-200"
             aria-label="Search books and authors"
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
           />
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         </div>
@@ -307,6 +314,7 @@ const App: React.FC = () => {
   const [selectedBookForSample, setSelectedBookForSample] = useState<Book | null>(null);
   const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
   const [activePage, setActivePage] = useState<string>('home'); // State for active page
+  const [searchTerm, setSearchTerm] = useState<string>(''); // State for search term
 
   const handleOpenSampleModal = (book: Book) => {
     setSelectedBookForSample(book);
@@ -317,6 +325,19 @@ const App: React.FC = () => {
     setIsSampleModalOpen(false);
     setSelectedBookForSample(null);
   };
+
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term);
+    // When searching, always switch back to the home page if not already there
+    if (activePage !== 'home') {
+      setActivePage('home');
+    }
+  };
+
+  const filteredBooks = BOOKS.filter(book =>
+    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    book.author.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const renderPageContent = () => {
     switch (activePage) {
@@ -349,9 +370,15 @@ const App: React.FC = () => {
                 </div>
               </div>
               <div className="grid gap-8">
-                {BOOKS.map((book) => (
-                  <BookCard key={book.id} book={book} onReadSampleClick={handleOpenSampleModal} />
-                ))}
+                {filteredBooks.length > 0 ? (
+                  filteredBooks.map((book) => (
+                    <BookCard key={book.id} book={book} onReadSampleClick={handleOpenSampleModal} />
+                  ))
+                ) : (
+                  <p className="text-center text-xl text-gray-600 col-span-full py-10">
+                    No books found matching "{searchTerm}". Try a different search term!
+                  </p>
+                )}
               </div>
             </section>
           </>
@@ -361,7 +388,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header activePage={activePage} onNavigate={(page) => setActivePage(page)} />
+      <Header activePage={activePage} onNavigate={(page) => setActivePage(page)} searchTerm={searchTerm} onSearchChange={handleSearchChange} />
 
       <main className="container mx-auto py-8 px-4 md:px-6">
         {renderPageContent()}
