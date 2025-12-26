@@ -1,0 +1,5 @@
+{
+  "name": "E-Book Review Hub",
+  "description": "A frontend application showcasing e-books with their detailed reviews and ratings. Designed for a clean user interface and intuitive information flow.",
+  "requestFramePermissions": []
+}
